@@ -7,8 +7,8 @@
 // @match        https://workplan.geniussports.com/*
 // @run-at       document-end
 // @grant        none
-// @updateURL    https://raw.githubusercontent.com/Simon-Martinez-v/QOL-Scrips/main/WPTabs.user.js
-// @downloadURL  https://raw.githubusercontent.com/Simon-Martinez-v/QOL-Scrips/main/WPTabs.user.js
+// @updateURL    https://raw.githubusercontent.com/Simon-Martinez-v/QOL-Scripts/main/WPTabs.user.js
+// @downloadURL  https://raw.githubusercontent.com/Simon-Martinez-v/QOL-Scripts/main/WPTabs.user.js
 // ==/UserScript==
 
 (function () {
