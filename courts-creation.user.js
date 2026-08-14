@@ -7,6 +7,8 @@
 // @grant        none
 // @require      https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js
 // @run-at       document-idle
+// @updateURL    https://raw.githubusercontent.com/Simon-Martinez-v/QOL-Scripts/main/courts-creation.user.js
+// @downloadURL  https://raw.githubusercontent.com/Simon-Martinez-v/QOL-Scripts/main/courts-creation.user.js
 // ==/UserScript==
 
 (function () {
