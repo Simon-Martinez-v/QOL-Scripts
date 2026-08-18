@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         User Picker Search
 // @namespace    simon-wfm-logger
-// @version      1.0.0
+// @version      1.0.1
 // @description  Replaces the invisible 500ms type-ahead on the user combo (Create/Edit Shift and CC Create Shift) with a visible, editable search box. Substring + multi-token matching on full name and user ID, backspace, arrow keys, Enter to pick, Esc to clear/close. Respects the site's own shift-type / active-user filtering.
 // @author       Simon Martinez
 // @match        https://workplan.geniussports.com/admin_work_plan/*
@@ -53,19 +53,37 @@
       li.${HL} { outline: 2px solid ${accent}; outline-offset: -2px; }
       .${BOX_CLASS} {
         position: sticky; top: 0; z-index: 5;
-        display: flex; align-items: center; gap: 6px;
-        padding: 4px 6px; background: #fff;
+        display: flex; align-items: center; gap: 8px;
+        padding: 7px 8px; background: #fff;
         border-bottom: 1px solid #ccc;
+        box-sizing: border-box;
       }
-      .${BOX_CLASS} input {
+      .${BOX_CLASS} input[type="text"] {
         flex: 1 1 auto; min-width: 0;
-        padding: 3px 5px; font-size: 12px;
-        border: 1px solid #bbb; border-radius: 2px;
-        background: #fff; color: #000;
+        box-sizing: border-box !important;
+        height: auto !important;
+        padding: 7px 9px !important;
+        font-size: 15px !important;
+        line-height: 20px !important;
+        font-family: inherit !important;
+        font-weight: normal !important;
+        border: 1px solid #999 !important;
+        border-radius: 3px !important;
+        background: #fff !important;
+        color: #000 !important;
+        text-transform: none !important;
       }
-      .${BOX_CLASS} input:focus { outline: none; border-color: ${accent}; }
+      .${BOX_CLASS} input[type="text"]:focus {
+        outline: none !important;
+        border-color: ${accent} !important;
+        box-shadow: 0 0 0 2px rgba(0,0,0,0.08) !important;
+      }
+      .${BOX_CLASS} input[type="text"]::placeholder {
+        color: #999 !important; font-size: 13px !important;
+      }
       .${BOX_CLASS} .wfm-count {
-        flex: 0 0 auto; font-size: 10px; color: #777; white-space: nowrap;
+        flex: 0 0 auto; font-size: 12px !important; color: #666;
+        white-space: nowrap; font-weight: normal;
       }
       .${BOX_CLASS} .wfm-count.wfm-zero { color: #c00; font-weight: bold; }
     `;
@@ -269,7 +287,7 @@
 
     const input = document.createElement('input');
     input.type = 'text';
-    input.placeholder = 'Type to search name or ID...';
+    input.placeholder = 'Search name or ID';
     input.setAttribute('autocomplete', 'off');
     input.setAttribute('spellcheck', 'false');
     input.setAttribute('data-wfm-user-search', '1');
@@ -518,5 +536,5 @@
   bodyObserver.observe(document.body, { childList: true, subtree: true });
   scan();
 
-  console.log('[User Picker Search] v1.0.0 loaded (' + (enabled ? 'enabled' : 'disabled') + ') - window.wfmUserSearch');
+  console.log('[User Picker Search] v1.0.1 loaded (' + (enabled ? 'enabled' : 'disabled') + ') - window.wfmUserSearch');
 })();
