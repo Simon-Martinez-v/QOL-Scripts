@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         User Picker Search
 // @namespace    simon-wfm-logger
-// @version      1.0.1
+// @version      1.0.2
 // @description  Replaces the invisible 500ms type-ahead on the user combo (Create/Edit Shift and CC Create Shift) with a visible, editable search box. Substring + multi-token matching on full name and user ID, backspace, arrow keys, Enter to pick, Esc to clear/close. Respects the site's own shift-type / active-user filtering.
 // @author       Simon Martinez
 // @match        https://workplan.geniussports.com/admin_work_plan/*
@@ -53,39 +53,51 @@
       li.${HL} { outline: 2px solid ${accent}; outline-offset: -2px; }
       .${BOX_CLASS} {
         position: sticky; top: 0; z-index: 5;
-        display: flex; align-items: center; gap: 8px;
-        padding: 7px 8px; background: #fff;
+        display: block;
+        padding: 8px; background: #fff;
         border-bottom: 1px solid #ccc;
         box-sizing: border-box;
       }
+      .${BOX_CLASS} .wfm-field { position: relative; display: block; }
       .${BOX_CLASS} input[type="text"] {
-        flex: 1 1 auto; min-width: 0;
+        display: block !important;
+        width: 100% !important;
         box-sizing: border-box !important;
         height: auto !important;
-        padding: 7px 9px !important;
-        font-size: 15px !important;
+        min-height: 34px !important;
+        margin: 0 !important;
+        padding: 7px 46px 7px 10px !important;
+        font-size: 16px !important;
         line-height: 20px !important;
-        font-family: inherit !important;
+        font-family: Arial, Helvetica, sans-serif !important;
         font-weight: normal !important;
+        letter-spacing: normal !important;
         border: 1px solid #999 !important;
         border-radius: 3px !important;
         background: #fff !important;
         color: #000 !important;
+        -webkit-text-fill-color: #000 !important;
+        opacity: 1 !important;
         text-transform: none !important;
+        text-indent: 0 !important;
       }
       .${BOX_CLASS} input[type="text"]:focus {
         outline: none !important;
         border-color: ${accent} !important;
-        box-shadow: 0 0 0 2px rgba(0,0,0,0.08) !important;
+        box-shadow: 0 0 0 2px rgba(0,0,0,0.10) !important;
       }
       .${BOX_CLASS} input[type="text"]::placeholder {
         color: #999 !important; font-size: 13px !important;
+        -webkit-text-fill-color: #999 !important;
       }
       .${BOX_CLASS} .wfm-count {
-        flex: 0 0 auto; font-size: 12px !important; color: #666;
-        white-space: nowrap; font-weight: normal;
+        position: absolute; right: 9px; top: 50%;
+        transform: translateY(-50%);
+        font-size: 11px !important; color: #666 !important;
+        white-space: nowrap; font-weight: normal !important;
+        pointer-events: none; background: transparent !important;
       }
-      .${BOX_CLASS} .wfm-count.wfm-zero { color: #c00; font-weight: bold; }
+      .${BOX_CLASS} .wfm-count.wfm-zero { color: #c00 !important; font-weight: bold !important; }
     `;
     (document.head || document.documentElement).appendChild(style);
   }
@@ -295,8 +307,11 @@
     const count = document.createElement('span');
     count.className = 'wfm-count';
 
-    wrap.appendChild(input);
-    wrap.appendChild(count);
+    const field = document.createElement('div');
+    field.className = 'wfm-field';
+    field.appendChild(input);
+    field.appendChild(count);
+    wrap.appendChild(field);
     ul.insertBefore(wrap, ul.firstChild);
 
     ul.__wfmBox = input;
@@ -420,8 +435,21 @@
   // Open/close watching
   // ---------------------------------------------------------------------------
 
+  // If the combo is a floating overlay (absolute/fixed), widening it can't
+  // disturb the surrounding form layout - so give the search box room to
+  // breathe when the site's own width is cramped.
+  const MIN_UL_WIDTH = 300;
+  function ensureWidth(ul) {
+    const cs = getComputedStyle(ul);
+    if (cs.position !== 'absolute' && cs.position !== 'fixed') return;
+    if (ul.getBoundingClientRect().width < MIN_UL_WIDTH) {
+      ul.style.setProperty('min-width', MIN_UL_WIDTH + 'px', 'important');
+    }
+  }
+
   function onComboOpened(ul) {
     injectBox(ul);
+    ensureWidth(ul);
     const box = ul.__wfmBox;
     if (!box) return;
     box.value = '';
@@ -525,6 +553,30 @@
     rescan() {
       scan();
       return 'rescanned';
+    },
+    // Run this with the dropdown OPEN if the box still looks wrong.
+    diagnose() {
+      const ul = openCombo() || allCombos()[0];
+      if (!ul) return 'no user combo found on this page';
+      const box = ul.__wfmBox;
+      if (!box) return 'combo found (' + ul.id + ') but no search box injected';
+      const bs = getComputedStyle(box);
+      const us = getComputedStyle(ul);
+      return {
+        ulId: ul.id,
+        ulPosition: us.position,
+        ulWidth: Math.round(ul.getBoundingClientRect().width),
+        ulOverflow: us.overflow + ' / ' + us.overflowX,
+        boxWidth: Math.round(box.getBoundingClientRect().width),
+        boxHeight: Math.round(box.getBoundingClientRect().height),
+        fontSize: bs.fontSize,
+        lineHeight: bs.lineHeight,
+        fontFamily: bs.fontFamily,
+        color: bs.color,
+        background: bs.backgroundColor,
+        textTransform: bs.textTransform,
+        styleTagPresent: !!document.getElementById('wfm-user-search-style')
+      };
     }
   };
 
@@ -536,5 +588,5 @@
   bodyObserver.observe(document.body, { childList: true, subtree: true });
   scan();
 
-  console.log('[User Picker Search] v1.0.1 loaded (' + (enabled ? 'enabled' : 'disabled') + ') - window.wfmUserSearch');
+  console.log('[User Picker Search] v1.0.2 loaded (' + (enabled ? 'enabled' : 'disabled') + ') - window.wfmUserSearch');
 })();
